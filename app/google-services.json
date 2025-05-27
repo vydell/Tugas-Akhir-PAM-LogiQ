@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "99246790406",
+    "firebase_url": "https://projek-akhir-pam-66797-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "projek-akhir-pam-66797",
+    "storage_bucket": "projek-akhir-pam-66797.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:99246790406:android:e0879fd4c3b31045f1f087",
+        "android_client_info": {
+          "package_name": "com.beginning.projekakhirpam"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCVRyHVyOnBvUweBtP5rpY2VawDVDyx7Lc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:99246790406:android:45cf84782a425622f1f087",
+        "android_client_info": {
+          "package_name": "com.beginning.tugasakhirpam"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCVRyHVyOnBvUweBtP5rpY2VawDVDyx7Lc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

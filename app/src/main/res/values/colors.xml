@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="primary">#289CB0</color>
+    <color name="primary_dark">#097E92</color>
+    <color name="primary_light">#80CAD6</color>
+    <color name="primary_bg">#D7E7EA</color>
+
+    <color name="secondary">#FFA841</color>
+    <color name="secondary_dark">#F6931D</color>
+    <color name="secondary_light">#FFCB8C</color>
+    <color name="secondary_bg">#FFECD5</color>
+
+    <color name="background">#FFF8EF</color>
+
+    <!-- Custom Colors -->
+    <color name="status_open">#00BCD4</color>
+    <color name="status_closed">#F44336</color>
+    <color name="primary_orange">#FF9800</color>
+    <color name="primary_teal">#00796B</color>
+    <color name="text_gray">#666666</color>
+    <color name="background_cream">#FFF8EF</color>
+
+    <!-- Additional colors for history -->
+    <color name="primary_color">#097E92</color>
+    <color name="background_color">#F5F5F5</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="text_primary">#333333</color>
+    <color name="text_secondary">#888888</color>
+    <color name="orange">#FF9800</color>
+    <color name="quiz_icon_bg">#8E44AD</color>
+</resources>
