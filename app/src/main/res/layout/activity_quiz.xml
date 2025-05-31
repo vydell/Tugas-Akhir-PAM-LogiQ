@@ -46,7 +46,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
             android:paddingHorizontal="60dp"
-            android:background="@drawable/rounded_button"
+            android:background="@drawable/button_rounded_primary"
             android:textColor="@color/white"
             android:text="PLAY"/>
 

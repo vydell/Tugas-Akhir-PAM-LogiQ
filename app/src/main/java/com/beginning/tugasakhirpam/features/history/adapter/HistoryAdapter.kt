@@ -55,7 +55,6 @@ class HistoryAdapter(
             append(history.submittedDate)
         }
 
-        // Set accuracy color based on percentage
         val accuracyColor = when {
             history.accuracy >= 80 -> R.color.status_open // Green
             history.accuracy >= 60 -> R.color.orange
@@ -66,7 +65,6 @@ class HistoryAdapter(
             ContextCompat.getColor(holder.itemView.context, accuracyColor)
         )
 
-        // Set completion rate color
         val completionColor = when {
             history.completionRate >= 80 -> R.color.status_open
             history.completionRate >= 60 -> R.color.orange

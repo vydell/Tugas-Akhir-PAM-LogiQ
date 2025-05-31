@@ -14,6 +14,10 @@ class QuizActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityQuizBinding
     private lateinit var quizId: String
+    private lateinit var quizTitle: String
+    private lateinit var quizDescription: String
+    private lateinit var userId: String
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,17 +25,19 @@ class QuizActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         quizId = intent.getStringExtra("QUIZ_ID") ?: ""
-        val quizDescription = intent.getStringExtra("QUIZ_DESCRIPTION") ?: ""
+        quizDescription = intent.getStringExtra("QUIZ_DESCRIPTION") ?: ""
+        userId = intent.getStringExtra("USER_ID") ?: ""
+        quizTitle = intent.getStringExtra("QUIZ_TITLE") ?: ""
 
-        // Set up UI
         binding.apply {
             tvQuizDesc.text = quizDescription
         }
 
         binding.btnPlay.setOnClickListener {
-            // Navigate to ContentActivity when Play is clicked
             val intent = Intent(this, ContentActivity::class.java).apply {
                 putExtra("QUIZ_ID", quizId)
+                putExtra("USER_ID", userId)
+                putExtra("QUIZ_TITLE", quizTitle)
             }
             startActivity(intent)
             finish()

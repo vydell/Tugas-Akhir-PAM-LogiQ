@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -25,11 +26,14 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
-class HomepageActivity : Fragment(R.layout.activity_homepage) {
+class HomepageFragment : Fragment(R.layout.activity_homepage) {
 
     private lateinit var quizRecyclerView: RecyclerView
     private lateinit var quizAdapter: HomepageQuizAdapter
     private lateinit var searchEditText: EditText
+    private lateinit var greetingTextView: TextView
+    private lateinit var userId: String
+    private lateinit var quizTitle: String
 
     private var quizList = mutableListOf<Quiz>()
     private var filteredQuizList = mutableListOf<Quiz>()
@@ -51,8 +55,13 @@ class HomepageActivity : Fragment(R.layout.activity_homepage) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        userId = arguments?.getString("USER_ID") ?: ""
+        greetingTextView = view.findViewById(R.id.greetingText)
         quizRecyclerView = view.findViewById(R.id.quizRecyclerView)
         searchEditText = view.findViewById(R.id.searchEditText)
+
+        var userName = arguments?.getString("USER_NAME") ?: "User"
+        greetingTextView.text = "Hi $userName"
 
         setupRecyclerView()
         setupSearchFunctionality()
@@ -84,8 +93,6 @@ class HomepageActivity : Fragment(R.layout.activity_homepage) {
 
     @SuppressLint("RestrictedApi")
     private fun loadQuizDataFromFirebase() {
-        Log.d(TAG, "Loading quizzes...")
-        Toast.makeText(requireContext(), "Loading quizzes...", Toast.LENGTH_SHORT).show()
 
         database.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(error: DatabaseError) {
@@ -113,6 +120,8 @@ class HomepageActivity : Fragment(R.layout.activity_homepage) {
                             "CLOSED" -> QuizStatusEnum.CLOSED
                             else -> QuizStatusEnum.CLOSED
                         }
+
+                        quizTitle = quizMap["title"].toString()
 
                         val quiz = Quiz(
                             id = id,
@@ -155,12 +164,11 @@ class HomepageActivity : Fragment(R.layout.activity_homepage) {
     private fun onQuizItemClicked(quiz: Quiz) {
         when (quiz.status) {
             QuizStatusEnum.OPENED -> {
-                Toast.makeText(requireContext(), "Opening quiz: ${quiz.title}", Toast.LENGTH_SHORT).show()
-                // Navigate to ContentActivity with the quiz ID
                 val intent = Intent(requireContext(), QuizActivity::class.java).apply {
                     putExtra("QUIZ_ID", quiz.id)
                     putExtra("QUIZ_TITLE", quiz.title)
                     putExtra("QUIZ_DESCRIPTION", quiz.description)
+                    putExtra("USER_ID", userId)
                 }
                 startActivity(intent)
             }

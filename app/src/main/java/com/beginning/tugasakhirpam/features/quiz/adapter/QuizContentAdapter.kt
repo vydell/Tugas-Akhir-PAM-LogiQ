@@ -1,17 +1,9 @@
 package com.beginning.tugasakhirpam.features.quiz.adapter
 
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.beginning.tugasakhirpam.R
-import com.beginning.tugasakhirpam.databinding.ActivityContentBinding
 import com.beginning.tugasakhirpam.databinding.ItemContentQuizBinding
-import com.beginning.tugasakhirpam.features.quiz.model.AnswerChoice
 import com.beginning.tugasakhirpam.features.quiz.model.Question
 
 class QuizContentAdapter : RecyclerView.Adapter<QuizContentAdapter.ViewHolder>() {
@@ -37,6 +29,7 @@ class QuizContentAdapter : RecyclerView.Adapter<QuizContentAdapter.ViewHolder>()
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bindItem(contents[position])
+
     }
 
     override fun getItemCount(): Int = contents.size

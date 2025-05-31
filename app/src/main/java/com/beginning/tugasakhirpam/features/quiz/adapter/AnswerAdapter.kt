@@ -1,9 +1,7 @@
 package com.beginning.tugasakhirpam.features.quiz.adapter
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.beginning.tugasakhirpam.R
 import com.beginning.tugasakhirpam.databinding.ItemAnswerQuizBinding
@@ -21,14 +19,12 @@ class AnswerAdapter: RecyclerView.Adapter<AnswerAdapter.ViewHolder>() {
             binding.apply {
                 tvAnswer.text = choice.text
 
-                // Update visual state based on selection
                 if (position == selectedPosition) {
                     setSelectedState()
                 } else {
                     setUnselectedState()
                 }
 
-                // Make entire item clickable
                 root.setOnClickListener {
                     updateSelection(position)
                     onAnswerSelected?.invoke(position)
@@ -49,8 +45,12 @@ class AnswerAdapter: RecyclerView.Adapter<AnswerAdapter.ViewHolder>() {
         val previousSelected = selectedPosition
         selectedPosition = newPosition
 
-        // Only update changed items
-        if (previousSelected != -1) notifyItemChanged(previousSelected)
+        if (previousSelected != -1) {
+            answers[previousSelected].isClick = false
+            notifyItemChanged(previousSelected)
+        }
+
+        answers[selectedPosition].isClick = true
         notifyItemChanged(selectedPosition)
     }
 

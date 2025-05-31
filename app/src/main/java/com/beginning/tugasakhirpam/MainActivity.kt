@@ -1,17 +1,11 @@
 package com.beginning.tugasakhirpam
 
-import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
-import com.beginning.tugasakhirpam.features.history.ui.HistoryActivity
-import com.beginning.tugasakhirpam.features.homepage.ui.HomepageActivity
-import com.beginning.tugasakhirpam.features.user.ui.ProfileActivity
+import com.beginning.tugasakhirpam.features.history.ui.HistoryFragment
+import com.beginning.tugasakhirpam.features.homepage.ui.HomepageFragment
+import com.beginning.tugasakhirpam.features.user.ui.ProfileFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
@@ -21,31 +15,44 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val userEmail = intent.getStringExtra("USER_EMAIL")
+        val userId = intent.getStringExtra("USER_ID") ?: ""
+        val userName = intent.getStringExtra("USER_NAME")
 
         bottomNavigation = findViewById(R.id.bottomNavigation)
 
-        // Load default fragment
-        if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, HomepageActivity())
-                .commit()
+        val bundle = Bundle().apply {
+            putString("USER_NAME", userName)
+            putString("USER_EMAIL", userEmail)
+            putString("USER_ID", userId)
+        }
 
+        if (savedInstanceState == null) {
+            val homepageFragment = HomepageFragment().apply {
+                arguments = bundle
+            }
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, homepageFragment)
+                .commit()
             bottomNavigation.selectedItemId = R.id.nav_home
         }
 
         bottomNavigation.setOnItemSelectedListener { item ->
             val fragment = when (item.itemId) {
-                R.id.nav_home -> HomepageActivity()
-                R.id.nav_profile -> ProfileActivity()
-                R.id.nav_history -> HistoryActivity()
+                R.id.nav_home -> HomepageFragment()
+                R.id.nav_profile -> ProfileFragment()
+                R.id.nav_history -> HistoryFragment()
                 else -> null
             }
+
+            fragment?.arguments = bundle
+
             fragment?.let {
                 supportFragmentManager.beginTransaction()
-                    .replace(R.id.fragmentContainer, it as Fragment)
+                    .replace(R.id.fragmentContainer, it)
                     .commit()
                 true
-            } == true
+            } ?: false
         }
     }
 }

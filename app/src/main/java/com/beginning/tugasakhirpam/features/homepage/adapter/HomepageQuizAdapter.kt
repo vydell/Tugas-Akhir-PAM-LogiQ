@@ -48,7 +48,6 @@ class HomepageQuizAdapter(
         holder.quizOpenDate.text = "Opens: ${quiz.openDate}"
         holder.quizCloseDate.text = "Closed: ${quiz.closeDate}"
 
-        // Set status appearance
         when (quiz.status) {
             QuizStatusEnum.OPENED -> {
                 holder.statusText.text = "opened"

@@ -1,7 +1,6 @@
 package com.beginning.tugasakhirpam.features.history.ui
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,24 +8,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.beginning.tugasakhirpam.R
 import com.beginning.tugasakhirpam.features.history.adapter.HistoryAdapter
 import com.beginning.tugasakhirpam.features.user.model.QuizHistory
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import java.text.ParseException
-import java.text.SimpleDateFormat
-import java.util.*
 
-class HistoryActivity : Fragment(R.layout.activity_history) {
+class HistoryFragment : Fragment(R.layout.activity_history) {
 
     private lateinit var historyRecyclerView: RecyclerView
     private lateinit var historyAdapter: HistoryAdapter
@@ -51,10 +45,18 @@ class HistoryActivity : Fragment(R.layout.activity_history) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val userId = arguments?.getString("USER_ID")
+        if (userId != null) {
+            setupFirebase(userId)
+            loadHistoryFromFirebase()
+        } else {
+            Toast.makeText(requireContext(), "User ID not found", Toast.LENGTH_SHORT).show()
+        }
+
         initViews(view)
         setupRecyclerView()
-        setupFirebase()
         loadHistoryFromFirebase()
+        Log.d(TAG, "Loading history for user: $userId")
     }
 
     private fun initViews(view: View) {
@@ -71,34 +73,10 @@ class HistoryActivity : Fragment(R.layout.activity_history) {
         }
     }
 
-    private fun setupFirebase() {
+    private fun setupFirebase(userId: String) {
         database = FirebaseDatabase.getInstance(
             "https://projek-akhir-pam-66797-default-rtdb.asia-southeast1.firebasedatabase.app"
-        ).getReference("users").child("user_salsa_gmail_com").child("quizHistory")
-
-        testFirebaseConnection()
-    }
-
-    private fun testFirebaseConnection() {
-        val testRef = FirebaseDatabase.getInstance()
-            .getReference(".info/connected")
-
-        testRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val connected = snapshot.getValue(Boolean::class.java) ?: false
-                if (connected) {
-                    Toast.makeText(requireContext(), "Firebase Connected ✅", Toast.LENGTH_SHORT)
-                        .show()
-                } else {
-                    Toast.makeText(requireContext(), "Firebase Disconnected ❌", Toast.LENGTH_SHORT)
-                        .show()
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e(TAG, "❌ Connection test cancelled: ${error.message}")
-            }
-        })
+        ).getReference("users").child(userId).child("quizHistory")
     }
 
     private fun loadHistoryFromFirebase() {
@@ -121,7 +99,7 @@ class HistoryActivity : Fragment(R.layout.activity_history) {
 
                         val history = QuizHistory(
                             id = parseIntValue(historyMap["id"]),
-                            quizId = parseIntValue(historyMap["quizId"]),
+                            quizId = historyMap["quizId"].toString(),
                             quizTitle = historyMap["quizTitle"]?.toString() ?: "Unknown Quiz",
                             score = parseIntValue(historyMap["score"]),
                             accuracy = parseIntValue(historyMap["accuracy"]),
