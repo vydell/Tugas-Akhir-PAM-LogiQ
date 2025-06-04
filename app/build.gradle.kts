@@ -58,4 +58,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.8.6")
     //Glide
     implementation("com.github.bumptech.glide:glide:4.11.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.11.0")
+    //Cloudinary
+    implementation("com.cloudinary:cloudinary-android:3.0.2")
 }

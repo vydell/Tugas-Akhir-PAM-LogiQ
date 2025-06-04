@@ -1,5 +1,6 @@
 package com.beginning.tugasakhirpam.features.quiz.ui
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -28,9 +29,6 @@ class ContentActivity : AppCompatActivity() {
     private var pages by Delegates.notNull<Int>()
     private var currPage by Delegates.notNull<Int>()
 
-    companion object {
-        const val EXTRA_CONTENTS = "extra_contents"
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,8 +43,8 @@ class ContentActivity : AppCompatActivity() {
         val userId = intent.getStringExtra("USER_ID") ?: ""
         val quizTitle = intent.getStringExtra("QUIZ_TITLE") ?: ""
 
-        pages = 0;
-        currPage = 1;
+        pages = 0
+        currPage = 1
         loadQuestionsFromFirebase(quizId)
         showPageChange(questionsList)
         setupRecyclerViewScrollListener()
@@ -83,7 +81,18 @@ class ContentActivity : AppCompatActivity() {
             }
             startActivity(intent)
             finish()
+        }
 
+        contentBinding.prevContent.setOnClickListener {
+            if (currPage > 1) {
+                contentBinding.rvContent.smoothScrollToPosition(currPage - 2)
+            }
+        }
+
+        contentBinding.nextContent.setOnClickListener {
+            if (currPage < pages) {
+                contentBinding.rvContent.smoothScrollToPosition(currPage)
+            }
         }
     }
 
@@ -92,9 +101,10 @@ class ContentActivity : AppCompatActivity() {
         val quizRef = database.getReference("quizzes").child(quizId).child("questions")
 
         quizRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            @SuppressLint("SetTextI18n")
             override fun onDataChange(snapshot: DataSnapshot) {
                 questionsList.clear()
-                pages = 0;
+                pages = 0
 
                 for (questionSnapshot in snapshot.children) {
                     val body = questionSnapshot.child("body").getValue(String::class.java)
@@ -118,7 +128,7 @@ class ContentActivity : AppCompatActivity() {
                             answerChoices = answerChoices
                         )
                     )
-                    pages++;
+                    pages++
                 }
 
                 contentAdapter.setData(questionsList)
@@ -147,6 +157,7 @@ class ContentActivity : AppCompatActivity() {
 
     private fun setupRecyclerViewScrollListener() {
         contentBinding.rvContent.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            @SuppressLint("SetTextI18n")
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
@@ -154,7 +165,9 @@ class ContentActivity : AppCompatActivity() {
                 val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
 
                 currPage = firstVisibleItemPosition + 1
-                contentBinding.tvQuizPage.setText("$currPage/$pages")
+                contentBinding.tvQuizPage.text = "$currPage/$pages"
+
+                updateNavigationButtons()
             }
         })
     }
@@ -181,6 +194,12 @@ class ContentActivity : AppCompatActivity() {
         return questionsList.count { question ->
             question.answerChoices?.any { it.isClick == true } == true
         }
+    }
+
+    private fun updateNavigationButtons() {
+        contentBinding.prevContent.isEnabled = currPage > 1
+
+        contentBinding.nextContent.isEnabled = currPage < pages
     }
 
 }

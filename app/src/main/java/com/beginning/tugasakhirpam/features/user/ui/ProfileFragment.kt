@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
@@ -25,6 +26,9 @@ import androidx.fragment.app.Fragment
 import com.beginning.tugasakhirpam.MainActivity
 import com.beginning.tugasakhirpam.R
 import com.bumptech.glide.Glide
+import com.cloudinary.android.MediaManager
+import com.cloudinary.android.callback.ErrorInfo
+import com.cloudinary.android.callback.UploadCallback
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -36,6 +40,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import java.io.ByteArrayOutputStream
 import java.io.FileNotFoundException
+import java.io.InputStream
 
 class ProfileFragment : Fragment(R.layout.activity_profile) {
     private lateinit var profileImageView: ImageView
@@ -44,6 +49,7 @@ class ProfileFragment : Fragment(R.layout.activity_profile) {
     private lateinit var changeUsernameButton: Button
     private lateinit var changePasswordButton: Button
     private lateinit var logoutButton: Button
+    private lateinit var profileImageUrl: String
 
     private lateinit var database: DatabaseReference
     private lateinit var storage: StorageReference
@@ -72,9 +78,9 @@ class ProfileFragment : Fragment(R.layout.activity_profile) {
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val imageBitmap = result.data?.extras?.get("data") as? Bitmap
-            imageBitmap?.let {
-                profileImageView.setImageBitmap(it)
-                uploadImageToFirebase(it)
+            imageBitmap?.let { bitmap ->
+                profileImageView.setImageBitmap(bitmap)
+                uploadBitmapToCloudinary(bitmap)
             }
         }
     }
@@ -83,16 +89,18 @@ class ProfileFragment : Fragment(R.layout.activity_profile) {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            val imageUri = result.data?.data
-            imageUri?.let {
+            result.data?.data?.let { uri ->
+                var inputStream: InputStream? = null
                 try {
-                    val inputStream = requireActivity().contentResolver.openInputStream(it)
+                    inputStream = requireActivity().contentResolver.openInputStream(uri)
                     val bitmap = BitmapFactory.decodeStream(inputStream)
                     profileImageView.setImageBitmap(bitmap)
-                    uploadImageToFirebase(bitmap)
-                } catch (e: FileNotFoundException) {
-                    Log.e(TAG, "File not found", e)
-                    Toast.makeText(requireContext(), "File not found", Toast.LENGTH_SHORT).show()
+                    uploadBitmapToCloudinary(bitmap)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error loading image", e)
+                    Toast.makeText(requireContext(), "Error loading image", Toast.LENGTH_SHORT).show()
+                } finally {
+                    inputStream?.close()
                 }
             }
         }
@@ -103,6 +111,18 @@ class ProfileFragment : Fragment(R.layout.activity_profile) {
         savedInstanceState: Bundle?,
     ): View? {
         val view = inflater.inflate(R.layout.activity_profile, container, false)
+
+        try {
+            val config = HashMap<String, String>().apply {
+                put("cloud_name", "di8cm5vjn")
+                put("api_key", "272388874236978")
+                put("api_secret", "-hWTH3y_Bxk5a0uT13XKplgsNdU")
+                put("secure", "true")
+            }
+            MediaManager.init(requireContext(), config)
+        } catch (e: Exception) {
+            Log.e(TAG, "Cloudinary initialization failed", e)
+        }
 
         profileImageView = view.findViewById(R.id.profileImageView)
         usernameEditText = view.findViewById(R.id.usernameEditText)
@@ -199,22 +219,60 @@ class ProfileFragment : Fragment(R.layout.activity_profile) {
         galleryLauncher.launch(galleryIntent)
     }
 
-    private fun uploadImageToFirebase(bitmap: Bitmap) {
+    private fun uploadBitmapToCloudinary(bitmap: Bitmap) {
         val baos = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos)
-        val data = baos.toByteArray()
+        val imageBytes = baos.toByteArray()
 
-        val profileImageRef = storage.child("profile_images/$userId.jpg")
-
-        profileImageRef.putBytes(data)
-            .addOnSuccessListener {
-                profileImageRef.downloadUrl.addOnSuccessListener { uri ->
-                    saveImageUrlToDatabase(uri.toString())
+        MediaManager.get().upload(imageBytes)
+            .option("public_id", "profile_$userId")
+            .option("folder", "user_profiles")
+            .callback(object : UploadCallback {
+                override fun onStart(requestId: String?) {
+                    //do nothing
                 }
-            }
-            .addOnFailureListener { e ->
-                Toast.makeText(requireContext(), "Upload failed: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
+
+                override fun onProgress(
+                    requestId: String?,
+                    bytes: Long,
+                    totalBytes: Long
+                ) {
+                    //do nothing
+                }
+
+                override fun onSuccess(
+                    requestId: String?,
+                    resultData: Map<*, *>?
+                ) {
+                    Toast.makeText(requireContext(), "Image uploaded", Toast.LENGTH_SHORT).show()
+                    activity?.runOnUiThread {
+                        val secureUrl = resultData?.get("secure_url") as? String
+                        secureUrl?.let { url ->
+                            profileImageUrl = url
+                            saveImageUrlToDatabase(url)
+                            Glide.with(requireContext())
+                                .load(url)
+                                .into(profileImageView)
+                            Toast.makeText(requireContext(), "Image uploaded", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+
+                override fun onError(
+                    requestId: String?,
+                    error: ErrorInfo?
+                ) {
+                    Toast.makeText(requireContext(), "Image upload failed", Toast.LENGTH_SHORT).show()
+                }
+
+                override fun onReschedule(
+                    requestId: String?,
+                    error: ErrorInfo?
+                ) {
+                    // do nothing
+                }
+
+            }).dispatch()
     }
 
     private fun saveImageUrlToDatabase(imageUrl: String) {
@@ -238,7 +296,9 @@ class ProfileFragment : Fragment(R.layout.activity_profile) {
                 if (snapshot.exists()) {
                     val profileImageUrl = snapshot.child("profileImageUrl").getValue(String::class.java)
                     profileImageUrl?.let { url ->
-                        Glide.with(requireContext()).load(url).into(profileImageView)
+                        Glide.with(requireContext())
+                            .load(url)
+                            .into(profileImageView)
                     }
 
                     val firebaseUsername = snapshot.child("profile").child("username").getValue(String::class.java)
@@ -257,12 +317,6 @@ class ProfileFragment : Fragment(R.layout.activity_profile) {
                 Log.e(TAG, "Database error: ${error.message}")
             }
         })
-    }
-
-    private fun loadImageFromUrl(url: String) {
-        Log.d(TAG, "Profile image URL: $url")
-        // TODO: Use Glide or Picasso here, example:
-        // Glide.with(this).load(url).into(profileImageView)
     }
 
     private fun updateUsername() {

@@ -10,7 +10,6 @@ class UserRepository@Inject constructor() {
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseDatabase.getInstance().getReference("users")
 
-    private lateinit var userRepository: UserRepository
     fun getCurrentUser(): UserProfile? {
         val user = auth.currentUser ?: return null
         return UserProfile(
@@ -59,6 +58,21 @@ class UserRepository@Inject constructor() {
             }
             .addOnFailureListener { e ->
                 onFailure(e)
+            }
+    }
+
+    fun hasUserCompletedQuiz(quizId: String, onResult: (Boolean) -> Unit) {
+        val userId = auth.currentUser?.uid ?: run {
+            onResult(false)
+            return
+        }
+
+        database.child(userId).child("quizHistory").child(quizId).get()
+            .addOnSuccessListener { snapshot ->
+                onResult(snapshot.exists())
+            }
+            .addOnFailureListener {
+                onResult(false)
             }
     }
 }

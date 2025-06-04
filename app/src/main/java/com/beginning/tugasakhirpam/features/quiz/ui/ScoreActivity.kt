@@ -2,6 +2,7 @@ package com.beginning.tugasakhirpam.features.quiz.ui
 
 import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.net.Uri
@@ -11,14 +12,9 @@ import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.beginning.tugasakhirpam.R
-import com.beginning.tugasakhirpam.databinding.ActivityContentBinding
+import com.beginning.tugasakhirpam.MainActivity
 import com.beginning.tugasakhirpam.databinding.ActivityScoreBinding
-import com.beginning.tugasakhirpam.features.quiz.adapter.QuizContentAdapter
 
 class ScoreActivity : AppCompatActivity() {
 
@@ -36,8 +32,6 @@ class ScoreActivity : AppCompatActivity() {
 
         contentBinding.tvResult.text = result.toString()
 
-        var quizHistory =
-
         contentBinding.btnSaveImg.setOnClickListener {
             val bitmap = takeScreenshot(contentBinding.root)
             val uri = saveBitmapToGallery(this, bitmap, "quiz_result_${System.currentTimeMillis()}")
@@ -50,14 +44,11 @@ class ScoreActivity : AppCompatActivity() {
         }
 
         contentBinding.btnDone.setOnClickListener {
-            val bitmap = takeScreenshot(contentBinding.root)
-            val uri = saveBitmapToGallery(this, bitmap, "quiz_result_${System.currentTimeMillis()}")
-
-            if (uri != null) {
-                Toast.makeText(this, "Screenshot saved!", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "Failed to save screenshot.", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             }
+            startActivity(intent)
+            finish()
         }
     }
 
